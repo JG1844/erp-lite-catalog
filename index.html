@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>好师傅木业</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    background: #F5F0E8;
+    color: #3A2A1A;
+    line-height: 1.6;
+  }
+  /* 顶部 */
+  header {
+    background: linear-gradient(135deg, #5D2E0C 0%, #7A3E12 100%);
+    color: #F5E6C8;
+    padding: 32px 20px 24px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(93,46,12,0.25);
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    margin-bottom: 6px;
+  }
+  header p {
+    font-size: 14px;
+    color: #D4B896;
+    letter-spacing: 1px;
+  }
+  /* 分类筛选 */
+  .filter-bar {
+    background: #FFF;
+    padding: 14px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    border-bottom: 1px solid #E8DDC8;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .filter-tag {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid #C9A96E;
+    background: #FFF;
+    color: #5D2E0C;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .filter-tag:hover { background: #F5E6C8; }
+  .filter-tag.active {
+    background: #5D2E0C;
+    color: #F5E6C8;
+    border-color: #5D2E0C;
+  }
+  /* 商品网格 */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: #FFF;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(93,46,12,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(93,46,12,0.18);
+  }
+  .card.offline { opacity: 0.65; }
+  .card.offline:hover { transform: none; }
+  /* 图片占位 */
+  .card-image {
+    height: 180px;
+    background: linear-gradient(135deg, #8B5A2B 0%, #5D2E0C 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 30px,
+      rgba(255,255,255,0.03) 30px,
+      rgba(255,255,255,0.03) 31px
+    );
+  }
+  .card-image .placeholder-text {
+    color: #D4B896;
+    font-size: 15px;
+    letter-spacing: 2px;
+    z-index: 1;
+    text-align: center;
+    padding: 0 16px;
+  }
+  /* 状态标签 */
+  .status-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 2;
+  }
+  .status-normal { background: #52C41A; color: #FFF; }
+  .status-low { background: #FAAD14; color: #FFF; }
+  .status-offline { background: #8C8C8C; color: #FFF; }
+  /* 卡片内容 */
+  .card-body {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-category {
+    font-size: 12px;
+    color: #C9A96E;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+  .card-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #3A2A1A;
+    margin-bottom: 8px;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: #7A6A5A;
+    margin-bottom: 12px;
+    flex: 1;
+  }
+  .card-specs {
+    font-size: 12px;
+    color: #8B7B6B;
+    margin-bottom: 12px;
+    line-height: 1.8;
+  }
+  .card-specs span {
+    display: inline-block;
+    margin-right: 12px;
+  }
+  .card-price {
+    font-size: 22px;
+    font-weight: 700;
+    color: #B8860B;
+    margin-top: auto;
+  }
+  .card-price .unit {
+    font-size: 13px;
+    font-weight: 400;
+    color: #8B7B6B;
+    margin-left: 4px;
+  }
+  /* 底部 */
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 12px;
+    color: #A89888;
+    border-top: 1px solid #E8DDC8;
+    background: #FFF;
+  }
+  /* 空状态 */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #A89888;
+    font-size: 15px;
+  }
+  /* 加载 */
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #8B7B6B;
+  }
+  /* 响应式 */
+  @media (max-width: 600px) {
+    header h1 { font-size: 22px; letter-spacing: 2px; }
+    .grid { grid-template-columns: 1fr; }
+    .card-image { height: 160px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>好师傅木业</h1>
+  <p>红木家具精品 · 精选实木 · 榫卯工艺 · 传承经典</p>
+</header>
+
+<div class="filter-bar" id="filterBar">
+  <span class="filter-tag active" data-cat="all">全部</span>
+</div>
+
+<div class="container">
+  <div class="loading" id="loading">正在加载商品目录…</div>
+  <div class="grid" id="grid" style="display:none;"></div>
+  <div class="empty" id="empty" style="display:none;">该分类暂无商品</div>
+</div>
+
+<footer id="footer">好师傅木业 · 商品目录</footer>
+
+<script>
+(function() {
+  var allProducts = [];
+  var currentFilter = 'all';
+
+  function formatPrice(n) {
+    return '¥' + Number(n).toLocaleString('zh-CN');
+  }
+
+  function statusClass(state) {
+    if (state === '停售' || state === '下架') return 'status-offline';
+    if (state === '库存少') return 'status-low';
+    return 'status-normal';
+  }
+
+  function isOffline(p) {
+    return p.saleStatus === '下架' || p.productState === '停售';
+  }
+
+  function renderCard(p) {
+    var offline = isOffline(p);
+    var dims = [];
+    if (p.lengthCm) dims.push(p.lengthCm + '×' + p.widthCm + '×' + p.heightCm + ' cm');
+    if (p.material) dims.push(p.material);
+    if (p.color) dims.push(p.color);
+
+    var html = '<div class="card' + (offline ? ' offline' : '') + '">';
+    html += '<div class="card-image">';
+    html += '<span class="status-badge ' + statusClass(p.productState) + '">' + (offline ? '已下架' : p.productState) + '</span>';
+    html += '<div class="placeholder-text">' + p.productName + '<br><span style="font-size:11px;opacity:0.7;">图片待补充</span></div>';
+    html += '</div>';
+    html += '<div class="card-body">';
+    html += '<div class="card-category">' + p.firstCategoryName + ' / ' + p.secondCategoryName + '</div>';
+    html += '<div class="card-name">' + p.productName + '</div>';
+    html += '<div class="card-desc">' + (p.description || '') + '</div>';
+    html += '<div class="card-specs">';
+    dims.forEach(function(d) { html += '<span>' + d + '</span>'; });
+    html += '</div>';
+    html += '<div class="card-price">' + formatPrice(p.price) + '<span class="unit">起</span></div>';
+    html += '</div></div>';
+    return html;
+  }
+
+  function render() {
+    var grid = document.getElementById('grid');
+    var empty = document.getElementById('empty');
+    var list = currentFilter === 'all'
+      ? allProducts
+      : allProducts.filter(function(p) { return p.firstCategoryName === currentFilter; });
+
+    if (list.length === 0) {
+      grid.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    grid.style.display = 'grid';
+    grid.innerHTML = list.map(renderCard).join('');
+  }
+
+  function buildFilters() {
+    var bar = document.getElementById('filterBar');
+    var cats = [];
+    allProducts.forEach(function(p) {
+      if (cats.indexOf(p.firstCategoryName) === -1) cats.push(p.firstCategoryName);
+    });
+    cats.forEach(function(cat) {
+      var tag = document.createElement('span');
+      tag.className = 'filter-tag';
+      tag.dataset.cat = cat;
+      tag.textContent = cat;
+      bar.appendChild(tag);
+    });
+    bar.addEventListener('click', function(e) {
+      var tag = e.target.closest('.filter-tag');
+      if (!tag) return;
+      currentFilter = tag.dataset.cat;
+      bar.querySelectorAll('.filter-tag').forEach(function(t) { t.classList.remove('active'); });
+      tag.classList.add('active');
+      render();
+    });
+  }
+
+  fetch('catalog.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      allProducts = data.products || [];
+      document.getElementById('loading').style.display = 'none';
+      if (data.generatedAt) {
+        document.getElementById('footer').textContent =
+          '好师傅木业 · 商品目录 · 更新于 ' + data.generatedAt + ' · 共 ' + data.count + ' 件';
+      }
+      buildFilters();
+      render();
+    })
+    .catch(function(err) {
+      document.getElementById('loading').textContent =
+        '加载失败：无法读取 catalog.json。请通过本地服务器打开此页面（如 IntelliJ 右键 → Open in Browser），或确认 catalog.json 与本页面在同一目录。';
+      console.error(err);
+    });
+})();
+</script>
+</body>
+</html>
